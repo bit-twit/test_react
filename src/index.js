@@ -1,20 +1,18 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { Router, Route, IndexRoute } from 'react-router';
+import { Router } from 'react-router';
 import { createHashHistory } from 'history';
 
 import * as serviceWorker from './serviceWorker';
 import './index.css';
 
-import Detail from './pages/detail';
-import List from "./pages/list";
+import routes from './routes';
 
 const appHistory = createHashHistory();
 
 ReactDOM.render(
     <Router history={appHistory} onUpdate={() => window.scrollTo(0, 0)}>
-        <Route path="/" component={ List } />
-        <Route path="/detail" component={ Detail } />
+        {routes}
     </Router>,
     document.getElementById('root')
 );

@@ -8,7 +8,8 @@ class List extends React.Component {
                 <h1>List</h1>
                 <p>Please choose a repository from the list below.</p>
                 <ul>
-                    <li><Link to="/detail">Detail</Link></li>
+                    <li><Link to="/detail/test_react">Test React</Link></li>
+                    <li><Link to="/detail/poi-shift-column">POI shift column</Link></li>
                 </ul>
             </div>
         );
