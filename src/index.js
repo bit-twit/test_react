@@ -1,19 +1,27 @@
+import { Provider } from 'react-redux';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Router } from 'react-router';
 import { createHashHistory } from 'history';
-
+import { createStore, applyMiddleware } from "redux";
+import thunk from "redux-thunk";
 import * as serviceWorker from './serviceWorker';
-import './index.css';
+import { composeWithDevTools } from 'redux-devtools-extension';
 
+import './index.css';
+import rootReducer from './rootReducer';
 import routes from './routes';
 
+
+const store = createStore(rootReducer, composeWithDevTools(applyMiddleware(thunk)));
 const appHistory = createHashHistory();
 
 ReactDOM.render(
-    <Router history={appHistory} onUpdate={() => window.scrollTo(0, 0)}>
-        {routes}
-    </Router>,
+    <Provider store={store}>
+        <Router history={appHistory} onUpdate={() => window.scrollTo(0, 0)}>
+            {routes}
+        </Router>
+    </Provider>,
     document.getElementById('root')
 );
 

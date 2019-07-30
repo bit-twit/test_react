@@ -1,7 +1,6 @@
 import React from 'react';
-import ajax from 'superagent';
-
-const BASE_URL = 'https://api.github.com/repos/bit-twit';
+import { connect } from "react-redux";
+import { fetchCommits, fetchForks, fetchPulls } from "../middleware/repoActions";
 
 class Detail extends React.Component {
     constructor(props) {
@@ -9,37 +8,18 @@ class Detail extends React.Component {
         console.log("Hi from constructor.");
 
         this.state = {
-            mode: 'commits',
-            commits: [],
-            forks: [],
-            pulls: []
+            mode: 'commits'
         };
-    }
-
-    fetchFeed(baseUrl, repo, type) {
-        const url = `${baseUrl}/${repo}/${type}`;
-        console.log(`Fetching from: ${url}`);
-        ajax.get(url)
-            .end((error, response) => {
-                    if (!error && response) {
-                        this.setState({ [type]: response.body });
-                    } else {
-                        console.log(`Error fetching ${type}`, error);
-                    }
-                }
-            );
     }
 
     componentWillMount() {
         console.log('Component will mount');
         console.log(this.props);
-        this.fetchFeed(BASE_URL, this.props.match.params.repo, 'commits');
-        this.fetchFeed(BASE_URL, this.props.match.params.repo, 'forks');
-        this.fetchFeed(BASE_URL, this.props.match.params.repo, 'pulls');
+        this.props.dispatch(fetchCommits(this.props.match.params.repo));
     }
 
     renderCommits() {
-        return this.state.commits.map((commit, index) => {
+        return this.props.commits.map((commit, index) => {
             const author = commit.author ? commit.author.login : 'Anonymous';
             return (<p key={index}>
                 <strong>{author}</strong>:
@@ -49,7 +29,7 @@ class Detail extends React.Component {
     }
 
     renderForks() {
-        return this.state.forks.map((fork, index) => {
+        return this.props.forks.map((fork, index) => {
             const owner = fork.owner ? fork.owner.login : 'Anonymous';
             return (<p key={index}>
                 <strong>{owner}</strong>: forked to
@@ -59,7 +39,7 @@ class Detail extends React.Component {
     }
 
     renderPulls() {
-        return this.state.pulls.map((pull, index) => {
+        return this.props.pulls.map((pull, index) => {
             const user = pull.user ? pull.user.login : 'Anonymous';
             return (<p key={index}>
                 <strong>{user}</strong>:
@@ -70,6 +50,12 @@ class Detail extends React.Component {
 
     selectMode(mode) {
         this.setState({mode});
+        switch (mode) {
+            case 'commits': this.props.dispatch(fetchCommits(this.props.match.params.repo)); break;
+            case 'forks': this.props.dispatch(fetchForks(this.props.match.params.repo)); break;
+            case 'pulls': this.props.dispatch(fetchPulls(this.props.match.params.repo)); break;
+            default: break;
+        }
     }
 
     render() {
@@ -82,6 +68,8 @@ class Detail extends React.Component {
             content = this.renderPulls();
         }
         return (<div>
+            <div><span>Loading: {this.props.loading}</span></div>
+            <div><span>Status: {this.props.error}</span></div>
             <button onClick={this.selectMode.bind(this, 'commits')}>Show Commits</button>
             <button onClick={this.selectMode.bind(this, 'forks')}>Show Forks</button>
             <button onClick={this.selectMode.bind(this, 'pulls')}>Show Pulls</button>
@@ -90,4 +78,12 @@ class Detail extends React.Component {
     }
 }
 
-export default Detail;
+const mapStateToProps = state => ({
+    commits: state.commits.items,
+    forks: state.forks.items,
+    pulls: state.pulls.items,
+    loading: state.commits.loading || state.forks.loading || state.pulls.loading,
+    error: state.commits.error + state.forks.error + state.pulls.error
+});
+
+export default connect(mapStateToProps)(Detail);
